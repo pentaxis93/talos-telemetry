@@ -45,6 +45,7 @@ htmlcov/
 # Kuzu database (local development)
 *.kuzu/
 data/kuzu/
+kuzu_data/
 
 # Telemetry data (local)
 data/telemetry/
