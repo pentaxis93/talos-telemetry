@@ -1,12 +1,17 @@
 """Friction logging MCP tool."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
 from talos_telemetry.db.connection import get_connection
 from talos_telemetry.embeddings.model import get_embedding
 from talos_telemetry.telemetry.events import emit_knowledge_event
+
+
+def _now_iso() -> str:
+    """Return current UTC time as ISO format string for Kuzu timestamp()."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def friction_log(
@@ -64,7 +69,7 @@ def friction_log(
                     id: '{friction_id}',
                     description: '{_escape(description)}',
                     category: '{category}',
-                    occurred_at: timestamp(),
+                    occurred_at: timestamp('{_now_iso()}'),
                     recurrence_count: 1,
                     embedding: {embedding}
                 }})
@@ -73,24 +78,24 @@ def friction_log(
             is_recurring = False
             new_count = 1
 
-        # Create PRODUCED relationship if session provided
+        # Create PRODUCED_FRICTION relationship if session provided
         if session_id:
             try:
                 conn.execute(f"""
                     MATCH (s:Session {{id: '{session_id}'}})
                     MATCH (f:Friction {{id: '{friction_id}'}})
-                    MERGE (s)-[:PRODUCED {{valid_from: timestamp()}}]->(f)
+                    MERGE (s)-[:PRODUCED_FRICTION {{valid_from: timestamp('{_now_iso()}')}}]->(f)
                 """)
             except Exception:
                 pass
 
-        # If blocking, create BLOCKED_BY relationship
+        # If blocking, create SESSION_BLOCKED_BY relationship
         if blocking and session_id:
             try:
                 conn.execute(f"""
                     MATCH (s:Session {{id: '{session_id}'}})
                     MATCH (f:Friction {{id: '{friction_id}'}})
-                    CREATE (s)-[:BLOCKED_BY {{severity: 'blocking'}}]->(f)
+                    CREATE (s)-[:SESSION_BLOCKED_BY {{severity: 'blocking'}}]->(f)
                 """)
             except Exception:
                 pass
