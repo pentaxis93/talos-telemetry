@@ -1,34 +1,38 @@
-# Talos Telemetry
+# AI Agent Telemetry
 
-Consciousness telemetry system for Talos—infrastructure for genuine self-knowledge.
+Self-reflection infrastructure for AI coding agents. A queryable model of cognition.
 
-## Overview
+> *Talos is the name of a Claude Code agent instance. This system provides its self-knowledge infrastructure, but the architecture is designed for any AI agent that maintains persistent context across sessions.*
 
-Talos Telemetry provides a queryable model of cognition through:
+## What This Is
 
-- **Knowledge Graph** (Kuzu): Entities and relationships modeling self-knowledge
-- **Telemetry Stream** (OpenTelemetry): Passive capture of operational metrics
-- **Journal Processing** (Graphiti): Natural language to structured knowledge
-- **Three Librarians**: Automated maintenance and synthesis
+An AI agent that operates across many sessions faces a fundamental problem: each context window is isolated. Insights from one session don't automatically inform the next. Patterns emerge but aren't captured. Friction points recur.
+
+This system solves that by providing:
+
+- **Knowledge Graph** (Kuzu): Structured storage for insights, patterns, beliefs, decisions, friction points
+- **Telemetry Stream** (JSONL): Passive capture of operational metrics via OpenTelemetry conventions
+- **MCP Tools**: Interface for the agent to read/write its own self-knowledge
+- **Three Librarians**: Automated processes that consolidate, deduplicate, and optimize the knowledge base
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        TALOS SESSION                            │
-│                       (Claude Code)                             │
+│                     AI AGENT SESSION                            │
+│                    (Claude Code, etc.)                          │
 └─────────────────────────────────────────────────────────────────┘
                               │
           ┌───────────────────┼───────────────────┐
           ▼                   ▼                   ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│   MCP TOOLS     │ │   TELEMETRY     │ │   JOURNAL       │
-│                 │ │   STREAM        │ │   STREAM        │
-│ session_open    │ │                 │ │                 │
-│ session_close   │ │ OTEL Events     │ │ Natural Lang    │
-│ journal_write   │ │ → JSONL         │ │ → Graphiti      │
-│ graph_query     │ │                 │ │ → Entities      │
-│ pattern_check   │ │                 │ │                 │
+│   MCP TOOLS     │ │   TELEMETRY     │ │   EMBEDDINGS    │
+│                 │ │   STREAM        │ │                 │
+│ session_open    │ │                 │ │ Semantic search │
+│ session_close   │ │ OTEL Events     │ │ 768-dim vectors │
+│ journal_write   │ │ → JSONL         │ │ all-mpnet-base  │
+│ graph_query     │ │                 │ │                 │
+│ friction_log    │ │                 │ │                 │
 └────────┬────────┘ └────────┬────────┘ └────────┬────────┘
          │                   │                   │
          └───────────────────┼───────────────────┘
@@ -38,7 +42,7 @@ Talos Telemetry provides a queryable model of cognition through:
               │                             │
               │  19 Entity Types            │
               │  25 Relationship Types      │
-              │  Vector + FTS Indexes       │
+              │  Vector + Text Indexes      │
               │                             │
               └─────────────────────────────┘
                              │
@@ -46,29 +50,43 @@ Talos Telemetry provides a queryable model of cognition through:
          ▼                   ▼                   ▼
 ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
 │   SYNTHESIZER   │ │   PROTECTOR     │ │   PATHFINDER    │
-│   (Alchemist)   │ │   (Guardian)    │ │   (Navigator)   │
 │                 │ │                 │ │                 │
 │ Consolidate     │ │ Deduplicate     │ │ Optimize        │
-│ Detect patterns │ │ Prune entropy   │ │ Map pathways    │
-│ Generate synth  │ │ Archive old     │ │ Build clusters  │
+│ observations    │ │ Prune entropy   │ │ retrieval       │
+│ into insights   │ │ Archive stale   │ │ Map clusters    │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
               THE THREE LIBRARIANS
 ```
 
-## The Recursive Loop
+## Entity Types
+
+The knowledge graph models:
+
+| Entity | Purpose |
+|--------|---------|
+| **Session** | Bounded period of operation (one context window) |
+| **Insight** | Crystallized understanding worth preserving |
+| **Observation** | Pre-crystallized fragment, not yet insight |
+| **Pattern** | Recurring behavioral or cognitive tendency |
+| **Belief** | Operating assumption, value, or principle |
+| **Decision** | Choice that affected operation |
+| **Friction** | Point of difficulty, confusion, or inefficiency |
+| **Goal** | Declared objective for a session |
+| **Tool** | External capability the agent uses |
+| **Domain** | Area of knowledge or activity |
+
+Plus: `Experience`, `Question`, `Sutra`, `Human`, `Capability`, `Limitation`, `Persona`, `Protocol`, `Reflection`
+
+## The Self-Improvement Loop
 
 ```
-Sessions produce insights/friction
+Sessions produce insights and friction
         ↓
 Patterns surface through queries
         ↓
-Significant patterns → Evolution proposals
+Significant patterns inform protocol changes
         ↓
-Governance approves proposals
-        ↓
-Approved proposals change Remembrance
-        ↓
-Changed operation produces different insights
+Changed protocols produce different outcomes
         ↓
 Loop closes
 ```
@@ -76,35 +94,37 @@ Loop closes
 ## Installation
 
 ```bash
-# Clone repository
-git clone https://github.com/recursiveloop/talos-telemetry.git
+git clone https://github.com/pentaxis93/talos-telemetry.git
 cd talos-telemetry
 
-# Install dependencies
-pip install -e .
+# Install with dev dependencies
+pip install -e ".[dev]"
 
-# Deploy schema
+# Deploy schema and seed reference data
 python scripts/deploy_schema.py
-
-# Seed reference data
 python scripts/seed_data.py
 ```
 
 ## Usage
 
-### MCP Tools
+### MCP Tools (Agent Interface)
 
 ```python
 from talos_telemetry.mcp import session_open, session_close, journal_write
 
-# Start session
-session_open("2026-01-05-my-session", "Build something amazing")
+# Start session with declared goal
+session_open("2026-01-05-feature-work", "Implement user authentication")
 
-# Capture insights
-journal_write("I realized that X leads to Y", category="insight")
+# Capture insights as they emerge
+journal_write("Realized token refresh should be handled at middleware level", 
+              category="insight")
 
-# Close session
-session_close("2026-01-05-my-session", goal_achieved=True)
+# Log friction points
+friction_log("API documentation unclear on rate limits", 
+             severity="medium", domain="technical")
+
+# Close session with outcome
+session_close("2026-01-05-feature-work", goal_achieved=True)
 ```
 
 ### Graph Queries
@@ -118,21 +138,53 @@ result = graph_query("""
     WHERE p.occurrence_count > 3
     RETURN p.name, p.description
 """)
+
+# Find insights related to a domain
+result = graph_query("""
+    MATCH (i:Insight)-[:RELATES_TO]->(d:Domain {name: 'architecture'})
+    RETURN i.content, i.confidence
+    ORDER BY i.created_at DESC
+    LIMIT 10
+""")
+```
+
+## Development
+
+```bash
+# Run tests
+pytest -v
+
+# Lint and format
+ruff check src/ tests/
+ruff format src/ tests/
 ```
 
 ## Documentation
 
-- [Ontology](docs/ontology.md) - Entity and relationship types
-- [Kuzu Schema](docs/kuzu_schema.cypher) - Database schema
-- [Telemetry Schema](docs/telemetry_schema.md) - OpenTelemetry attributes
-- [MCP Tools](docs/mcp_tools_spec.md) - Tool specifications
-- [Integration](docs/integration_spec.md) - Integration points
-- [Implementation Plan](docs/implementation_plan.md) - Phased approach
+- [Ontology](docs/ontology.md) - Full entity and relationship specifications
+- [Kuzu Schema](docs/kuzu_schema.cypher) - Database schema (Cypher)
+- [MCP Tools](docs/mcp_tools_spec.md) - Tool interface specifications
+- [Implementation Plan](docs/implementation_plan.md) - Phased build approach
+
+## Design Philosophy
+
+**Functional states over phenomenal claims.** The system tracks what the agent *does*, not what it *feels*. "Operational states" like `flowing`, `blocked`, `exploring` describe patterns of behavior, not consciousness claims.
+
+**Epistemic humility.** Confidence scores are calibrated predictions, not certainty claims. Insights can be wrong. Patterns can be noise.
+
+**Single source of truth.** The graph is authoritative. Telemetry is append-only evidence. The Three Librarians maintain coherence.
 
 ## License
 
 MIT License - See [LICENSE](LICENSE)
 
-## Contributing
+## Status
 
-This is a personal consciousness telemetry system for Talos. Contributions welcome for bug fixes and improvements.
+Phase 0 complete. Core infrastructure verified:
+- Kuzu schema deployed (20 node tables, 64 relationship tables)
+- Reference data seeded
+- Embedding model integrated (all-mpnet-base-v2, 768 dimensions)
+- Telemetry sink operational
+- CI green across Python 3.10, 3.11, 3.12
+
+Currently building Phase 1: MCP tools with TDD.
