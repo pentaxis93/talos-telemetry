@@ -110,19 +110,24 @@ def session_close(
     goal_achieved: bool | None = None,
     summary: str | None = None,
     skip_reflection: bool = False,
+    run_pattern_check: bool = True,
+    generate_proposals: bool = True,
 ) -> dict[str, Any]:
     """Finalize a telemetry session.
 
-    Updates Session node, aggregates metrics, emits session.end event.
+    Updates Session node, aggregates metrics, runs pattern detection,
+    emits session.end event.
 
     Args:
         session_id: Session identifier to close.
         goal_achieved: Whether session goal was achieved.
         summary: Brief session summary.
         skip_reflection: Skip mandatory reflection.
+        run_pattern_check: Run pattern detection at close (default True).
+        generate_proposals: Generate Evolution proposals for significant patterns.
 
     Returns:
-        Dict with session statistics and reflection prompt.
+        Dict with session statistics, pattern check results, and reflection prompt.
     """
     try:
         conn = get_connection()
@@ -182,6 +187,27 @@ def session_close(
             "insights_produced": insight_count,
             "frictions_logged": friction_count,
         }
+
+        # Run pattern detection - this is where the loop closes
+        if run_pattern_check:
+            try:
+                from talos_telemetry.mcp.patterns import pattern_check
+
+                pattern_result = pattern_check(
+                    session_id=session_id,
+                    generate_proposals=generate_proposals,
+                )
+                response["pattern_check"] = {
+                    "ran": True,
+                    "significance": pattern_result.get("significance", {}),
+                    "summary": pattern_result.get("summary", ""),
+                    "proposals_generated": pattern_result.get("proposals_generated", []),
+                }
+            except Exception as e:
+                response["pattern_check"] = {
+                    "ran": False,
+                    "error": str(e),
+                }
 
         if not skip_reflection:
             response["requires_reflection"] = True
