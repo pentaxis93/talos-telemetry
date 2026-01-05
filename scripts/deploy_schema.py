@@ -7,8 +7,8 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from talos_telemetry.db.connection import init_database, get_connection
-from talos_telemetry.db.schema import deploy_schema, verify_schema
+from talos_telemetry.db.connection import init_database
+from talos_telemetry.db.kuzu_schema import deploy_schema, verify_schema
 
 
 def main():
@@ -22,27 +22,28 @@ def main():
     print(f"\nSchema deployment results:")
     print(f"  Node tables: {result['node_tables']}")
     print(f"  Relationship tables: {result['rel_tables']}")
-    print(f"  Indexes: {result['indexes']}")
-    print(f"  Reference data: {result['data']}")
 
     if result["errors"]:
         print(f"\nErrors ({len(result['errors'])}):")
-        for error in result["errors"]:
-            print(f"  - {error['error'][:100]}")
+        for error in result["errors"][:10]:  # Limit to 10
+            print(f"  - {error[:100]}")
 
     print("\nVerifying schema...")
     verify = verify_schema()
 
     print(f"\nVerification results:")
-    print(f"  Expected nodes: {verify['expected_nodes']}")
-    print(f"  Found nodes: {verify['found_nodes']}")
+    print(f"  Total tables: {verify['total_tables']}")
+    print(f"  Node tables: {verify['node_tables']} (expected {verify['expected_nodes']})")
+    print(f"  Rel tables: {verify['rel_tables']} (expected ~{verify['expected_rels']})")
 
-    if verify["missing_nodes"]:
-        print(f"  Missing: {verify['missing_nodes']}")
+    success = result["node_tables"] >= 19 and not result["errors"]
+
+    if success:
+        print("\nSchema deployment successful!")
     else:
-        print("  All node tables present!")
+        print("\nSchema deployment had issues.")
 
-    return 0 if not result["errors"] and not verify["missing_nodes"] else 1
+    return 0 if success else 1
 
 
 if __name__ == "__main__":
