@@ -180,11 +180,44 @@ MIT License - See [LICENSE](LICENSE)
 
 ## Status
 
-Phase 0 complete. Core infrastructure verified:
-- Kuzu schema deployed (20 node tables, 64 relationship tables)
-- Reference data seeded
-- Embedding model integrated (all-mpnet-base-v2, 768 dimensions)
-- Telemetry sink operational
-- CI green across Python 3.10, 3.11, 3.12
+**All core phases complete. 126 tests passing.**
 
-Currently building Phase 1: MCP tools with TDD.
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 0 | Foundation (Kuzu, embeddings, telemetry) | ✅ |
+| 1 | MCP Tools (session, journal, friction, query) | ✅ |
+| 2 | LBRP Integration (ceremony hooks) | ✅ |
+| 3 | INHERITED Capture (temporal "what I knew when") | ✅ |
+| 4 | Entity Extraction (LLM-powered, OpenAI/Anthropic) | ✅ |
+| 5 | Pattern Detection (recurring friction → Evolution proposals) | ✅ |
+| 6 | Query & Polish (reflect tool, exports) | ✅ |
+
+### MCP Tools Available
+
+| Tool | Purpose |
+|------|---------|
+| `session_open` | Initialize session with goal |
+| `session_close` | Finalize session, run pattern check |
+| `journal_write` | Capture insight/observation with explicit category |
+| `journal_extract` | LLM-powered entity extraction from free text |
+| `journal_query` | Semantic search over knowledge |
+| `friction_log` | Log friction points |
+| `reflect` | Meta-cognitive capture |
+| `pattern_check` | Surface recurring patterns |
+| `graph_query` | Execute Cypher queries |
+
+### The Loop Closes
+
+```
+session_open → [work] → friction_log/journal_* → session_close
+                                                      ↓
+                                               pattern_check
+                                                      ↓
+                                          Evolution proposals
+                                                      ↓
+                                          Governance review
+                                                      ↓
+                                          Protocol changes
+                                                      ↓
+                                          [next session]
+```

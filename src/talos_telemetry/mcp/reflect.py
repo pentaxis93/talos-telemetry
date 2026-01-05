@@ -1,12 +1,21 @@
-"""Reflection MCP tool."""
+"""Reflection MCP tool - meta-cognitive capture and synthesis.
 
-from datetime import datetime
+The reflect tool enables the agent to step back and observe its own operation,
+capturing meta-level insights about the current session or broader patterns.
+"""
+
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
 from talos_telemetry.db.connection import get_connection
 from talos_telemetry.embeddings.model import get_embedding
 from talos_telemetry.telemetry.events import emit_event
+
+
+def _now_iso() -> str:
+    """Return current UTC time as ISO format string for Kuzu timestamp()."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def reflect(
@@ -40,7 +49,7 @@ def reflect(
             CREATE (r:Reflection {{
                 id: '{reflection_id}',
                 content: '{_escape(content)}',
-                occurred_at: timestamp(),
+                occurred_at: timestamp('{_now_iso()}'),
                 embedding: {embedding}
                 {trigger_clause}
             }})
@@ -52,7 +61,7 @@ def reflect(
                 conn.execute(f"""
                     MATCH (s:Session {{id: '{session_id}'}})
                     MATCH (r:Reflection {{id: '{reflection_id}'}})
-                    CREATE (s)-[:PRODUCED {{valid_from: timestamp()}}]->(r)
+                    CREATE (s)-[:PRODUCED_REFLECTION {{valid_from: timestamp('{_now_iso()}')}}]->(r)
                 """)
             except Exception:
                 pass
@@ -87,7 +96,7 @@ def reflect(
                     CREATE (i:Insight {{
                         id: '{insight_id}',
                         content: '{_escape(content[:500])}',
-                        created_at: timestamp(),
+                        created_at: timestamp('{_now_iso()}'),
                         domain: 'meta-cognitive',
                         embedding: {insight_embedding}
                     }})
@@ -97,7 +106,7 @@ def reflect(
                 conn.execute(f"""
                     MATCH (r:Reflection {{id: '{reflection_id}'}})
                     MATCH (i:Insight {{id: '{insight_id}'}})
-                    CREATE (r)-[:CRYSTALLIZED_INTO {{valid_from: timestamp()}}]->(i)
+                    CREATE (r)-[:REFLECTION_CRYSTALLIZED_INTO {{valid_from: timestamp('{_now_iso()}')}}]->(i)
                 """)
 
                 extracted_entities.append(
@@ -140,3 +149,59 @@ def _classify_reflection(content: str) -> str:
 def _escape(text: str) -> str:
     """Escape text for Cypher queries."""
     return text.replace("'", "\\'").replace('"', '\\"').replace("\n", "\\n")
+
+
+def get_recent_reflections(
+    limit: int = 10,
+    session_id: str | None = None,
+) -> dict[str, Any]:
+    """Get recent reflections, optionally filtered by session.
+
+    Args:
+        limit: Maximum reflections to return.
+        session_id: Filter to specific session.
+
+    Returns:
+        Dict with recent reflections.
+    """
+    try:
+        conn = get_connection()
+
+        if session_id:
+            result = conn.execute(f"""
+                MATCH (s:Session {{id: '{session_id}'}})-[:PRODUCED_REFLECTION]->(r:Reflection)
+                RETURN r.id, r.content, r.trigger, r.occurred_at
+                ORDER BY r.occurred_at DESC
+                LIMIT {limit}
+            """)
+        else:
+            result = conn.execute(f"""
+                MATCH (r:Reflection)
+                RETURN r.id, r.content, r.trigger, r.occurred_at
+                ORDER BY r.occurred_at DESC
+                LIMIT {limit}
+            """)
+
+        reflections = []
+        while result.has_next():
+            row = result.get_next()
+            reflections.append(
+                {
+                    "id": row[0],
+                    "content": row[1],
+                    "trigger": row[2],
+                    "occurred_at": str(row[3]) if row[3] else None,
+                }
+            )
+
+        return {
+            "success": True,
+            "reflections": reflections,
+            "count": len(reflections),
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+        }
