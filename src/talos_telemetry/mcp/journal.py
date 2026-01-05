@@ -1,12 +1,17 @@
 """Journal MCP tools - write and query journal entries."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
 from talos_telemetry.db.connection import get_connection
 from talos_telemetry.embeddings.model import get_embedding
 from talos_telemetry.telemetry.events import emit_knowledge_event
+
+
+def _now_iso() -> str:
+    """Return current UTC time as ISO format string for Kuzu timestamp()."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def journal_write(
@@ -115,13 +120,15 @@ def journal_write(
             }
             _create_entity(conn, entity_type, props)
 
-        # Create PRODUCED relationship if session provided
+        # Create PRODUCED_* relationship if session provided
+        # Relationship table names are typed: PRODUCED_INSIGHT, PRODUCED_OBSERVATION, etc.
         if session_id:
+            rel_type = f"PRODUCED_{entity_type.upper()}"
             try:
                 conn.execute(f"""
                     MATCH (s:Session {{id: '{session_id}'}})
                     MATCH (e:{entity_type} {{id: '{entity_id}'}})
-                    CREATE (s)-[:PRODUCED {{valid_from: timestamp()}}]->(e)
+                    CREATE (s)-[:{rel_type} {{valid_from: timestamp('{_now_iso()}')}}]->(e)
                 """)
             except Exception:
                 pass  # Session might not exist
@@ -269,7 +276,8 @@ def _create_entity(conn, entity_type: str, props: dict) -> None:
         if key == "embedding":
             prop_parts.append(f"{key}: {value}")
         elif value == "timestamp()":
-            prop_parts.append(f"{key}: timestamp()")
+            # Kuzu requires timestamp string argument
+            prop_parts.append(f"{key}: timestamp('{_now_iso()}')")
         elif isinstance(value, str):
             prop_parts.append(f"{key}: '{_escape(value)}'")
         elif isinstance(value, (int, float)):
