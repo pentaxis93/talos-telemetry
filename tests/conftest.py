@@ -46,22 +46,29 @@ def fresh_db():
     from talos_telemetry.db.kuzu_schema import deploy_schema
     from talos_telemetry.db.seed import seed_reference_data
 
-    # Close any existing connection
+    # Close any existing connection first - MUST happen before deletion
     close_connection()
 
     # Remove existing test db
+    # Note: Kuzu 0.4+ stores database as a single file, not a directory
     global TEST_DB_PATH
     if TEST_DB_PATH and TEST_DB_PATH.exists():
-        shutil.rmtree(TEST_DB_PATH, ignore_errors=True)
+        if TEST_DB_PATH.is_file():
+            TEST_DB_PATH.unlink()
+        elif TEST_DB_PATH.is_dir():
+            shutil.rmtree(TEST_DB_PATH)
 
-    # Initialize fresh db
+    # Initialize fresh db - this will set the module globals
     init_database()
     deploy_schema()
     seed_reference_data()
 
-    yield get_connection()
+    # Get the connection that MCP tools will also use
+    conn = get_connection()
 
-    # Cleanup
+    yield conn
+
+    # Close connection after test completes
     close_connection()
 
 

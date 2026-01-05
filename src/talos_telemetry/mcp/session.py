@@ -1,10 +1,15 @@
 """Session lifecycle MCP tools."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from talos_telemetry.db.connection import get_connection
 from talos_telemetry.telemetry.events import emit_session_end, emit_session_start
+
+
+def _now_iso() -> str:
+    """Return current UTC time as ISO format string for Kuzu timestamp()."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def session_open(
@@ -35,7 +40,7 @@ def session_open(
         conn.execute(f"""
             CREATE (s:Session {{
                 id: '{session_id}',
-                started_at: timestamp(),
+                started_at: timestamp('{_now_iso()}'),
                 goal: '{_escape(goal)}'
             }})
         """)
@@ -135,7 +140,7 @@ def session_close(
 
         # Update Session node
         update_parts = [
-            "s.ended_at = timestamp()",
+            f"s.ended_at = timestamp('{_now_iso()}')",
             f"s.duration_seconds = {duration_seconds}",
         ]
         if summary:

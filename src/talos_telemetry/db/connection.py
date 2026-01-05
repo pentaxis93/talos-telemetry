@@ -62,10 +62,22 @@ def get_connection(path: Path | None = None) -> kuzu.Connection:
 
 
 def close_connection() -> None:
-    """Close database connection."""
+    """Close database connection and release file locks."""
     global _db, _conn
-    _conn = None
-    _db = None
+
+    if _conn is not None:
+        try:
+            _conn.close()
+        except Exception:
+            pass  # Connection might already be closed
+        _conn = None
+
+    if _db is not None:
+        try:
+            _db.close()
+        except Exception:
+            pass  # Database might already be closed
+        _db = None
 
 
 def execute_query(query: str, parameters: dict | None = None) -> kuzu.QueryResult:
