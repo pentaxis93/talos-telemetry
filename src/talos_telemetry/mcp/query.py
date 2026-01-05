@@ -1,10 +1,9 @@
 """Graph query MCP tool."""
 
 import re
-from typing import Any, Optional
+from typing import Any
 
 from talos_telemetry.db.connection import get_connection
-
 
 # Query timeout in seconds
 QUERY_TIMEOUT = 30
@@ -18,7 +17,7 @@ DISALLOWED_KEYWORDS = ["CREATE", "DELETE", "SET", "REMOVE", "MERGE", "DROP", "AL
 
 def graph_query(
     cypher: str,
-    parameters: Optional[dict] = None,
+    parameters: dict | None = None,
     explain: bool = False,
 ) -> dict[str, Any]:
     """Execute a Cypher query against the knowledge graph.
@@ -80,7 +79,7 @@ def graph_query(
         }
 
 
-def _validate_query(cypher: str) -> Optional[str]:
+def _validate_query(cypher: str) -> str | None:
     """Validate that query is read-only.
 
     Returns error message if invalid, None if valid.

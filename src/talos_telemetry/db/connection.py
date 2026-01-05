@@ -2,7 +2,6 @@
 
 import os
 from pathlib import Path
-from typing import Optional
 
 import kuzu
 
@@ -10,8 +9,8 @@ import kuzu
 DEFAULT_DB_PATH = Path.home() / ".talos" / "telemetry" / "kuzu"
 
 # Module-level connection cache
-_db: Optional[kuzu.Database] = None
-_conn: Optional[kuzu.Connection] = None
+_db: kuzu.Database | None = None
+_conn: kuzu.Connection | None = None
 
 
 def get_db_path() -> Path:
@@ -22,7 +21,7 @@ def get_db_path() -> Path:
     return DEFAULT_DB_PATH
 
 
-def init_database(path: Optional[Path] = None) -> kuzu.Database:
+def init_database(path: Path | None = None) -> kuzu.Database:
     """Initialize or get existing database.
 
     Args:
@@ -43,7 +42,7 @@ def init_database(path: Optional[Path] = None) -> kuzu.Database:
     return _db
 
 
-def get_connection(path: Optional[Path] = None) -> kuzu.Connection:
+def get_connection(path: Path | None = None) -> kuzu.Connection:
     """Get database connection.
 
     Args:
@@ -69,7 +68,7 @@ def close_connection() -> None:
     _db = None
 
 
-def execute_query(query: str, parameters: Optional[dict] = None) -> kuzu.QueryResult:
+def execute_query(query: str, parameters: dict | None = None) -> kuzu.QueryResult:
     """Execute a Cypher query.
 
     Args:

@@ -1,7 +1,5 @@
 """Tests for Kuzu schema deployment."""
 
-import pytest
-
 
 class TestSchemaDeployment:
     """Tests verifying schema is deployed correctly."""

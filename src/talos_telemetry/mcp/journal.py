@@ -1,10 +1,10 @@
 """Journal MCP tools - write and query journal entries."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
-from talos_telemetry.db.connection import execute_query, get_connection
+from talos_telemetry.db.connection import get_connection
 from talos_telemetry.embeddings.model import get_embedding
 from talos_telemetry.telemetry.events import emit_knowledge_event
 
@@ -12,9 +12,9 @@ from talos_telemetry.telemetry.events import emit_knowledge_event
 def journal_write(
     content: str,
     category: str,
-    session_id: Optional[str] = None,
-    domain: Optional[str] = None,
-    confidence: Optional[float] = None,
+    session_id: str | None = None,
+    domain: str | None = None,
+    confidence: float | None = None,
 ) -> dict[str, Any]:
     """Write a journal entry.
 
@@ -163,8 +163,8 @@ def journal_write(
 
 def journal_query(
     query: str,
-    entity_types: Optional[list[str]] = None,
-    domains: Optional[list[str]] = None,
+    entity_types: list[str] | None = None,
+    domains: list[str] | None = None,
     limit: int = 10,
 ) -> dict[str, Any]:
     """Semantic search over journal entries.

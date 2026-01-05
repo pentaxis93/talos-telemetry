@@ -1,9 +1,8 @@
 """Pattern detection MCP tool."""
 
-from typing import Any, Optional
+from typing import Any
 
 from talos_telemetry.db.connection import get_connection
-
 
 # Thresholds for pattern detection
 FRICTION_RECURRENCE_THRESHOLD = 3
@@ -13,7 +12,7 @@ EMERGING_SIGNAL_THRESHOLD = 2
 
 def pattern_check(
     session_id: str,
-    context: Optional[str] = None,
+    context: str | None = None,
     include_emerging: bool = True,
 ) -> dict[str, Any]:
     """Check for recurring patterns based on session context.
@@ -141,7 +140,7 @@ def _check_confirmed_patterns(conn) -> list[dict]:
                     "status": "confirmed",
                     "relevance": 0.8,
                     "occurrence_count": row[3],
-                    "indicators": [f"Confirmed pattern", f"Observed {row[3]} times"],
+                    "indicators": ["Confirmed pattern", f"Observed {row[3]} times"],
                 }
             )
 

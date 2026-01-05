@@ -1,7 +1,7 @@
 """Friction logging MCP tool."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 from talos_telemetry.db.connection import get_connection
@@ -12,7 +12,7 @@ from talos_telemetry.telemetry.events import emit_knowledge_event
 def friction_log(
     description: str,
     category: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
     blocking: bool = False,
 ) -> dict[str, Any]:
     """Log a friction point.

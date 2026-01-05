@@ -17,7 +17,7 @@ _sink: Optional["TelemetrySink"] = None
 class TelemetrySink:
     """Telemetry event sink that writes to JSONL files."""
 
-    def __init__(self, path: Optional[Path] = None):
+    def __init__(self, path: Path | None = None):
         """Initialize telemetry sink.
 
         Args:
@@ -74,9 +74,9 @@ class TelemetrySink:
 
     def read_events(
         self,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None,
-        event_type: Optional[str] = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        event_type: str | None = None,
         limit: int = 1000,
     ) -> list[dict[str, Any]]:
         """Read events from sink.
@@ -121,7 +121,7 @@ class TelemetrySink:
         return events
 
 
-def get_sink(path: Optional[Path] = None) -> TelemetrySink:
+def get_sink(path: Path | None = None) -> TelemetrySink:
     """Get or create telemetry sink.
 
     Args:

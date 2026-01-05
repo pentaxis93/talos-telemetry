@@ -1,7 +1,6 @@
 """Schema deployment for Kuzu database."""
 
 from pathlib import Path
-from typing import Optional
 
 from talos_telemetry.db.connection import get_connection
 
@@ -13,7 +12,7 @@ def get_schema_path() -> Path:
     return package_root / "docs" / "kuzu_schema.cypher"
 
 
-def deploy_schema(schema_path: Optional[Path] = None) -> dict:
+def deploy_schema(schema_path: Path | None = None) -> dict:
     """Deploy schema to Kuzu database.
 
     Args:

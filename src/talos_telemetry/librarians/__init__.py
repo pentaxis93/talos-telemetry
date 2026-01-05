@@ -6,8 +6,8 @@ The Three Librarians:
 - Pathfinder (Navigator): Maps pathways and optimizes retrieval
 """
 
-from talos_telemetry.librarians.synthesizer import Synthesizer
-from talos_telemetry.librarians.protector import Protector
 from talos_telemetry.librarians.pathfinder import Pathfinder
+from talos_telemetry.librarians.protector import Protector
+from talos_telemetry.librarians.synthesizer import Synthesizer
 
 __all__ = ["Synthesizer", "Protector", "Pathfinder"]

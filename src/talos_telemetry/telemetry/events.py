@@ -1,7 +1,7 @@
 """Telemetry event emission."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 from talos_telemetry.telemetry.sink import get_sink
@@ -10,8 +10,8 @@ from talos_telemetry.telemetry.sink import get_sink
 def emit_event(
     event_type: str,
     attributes: dict[str, Any],
-    trace_id: Optional[str] = None,
-    span_id: Optional[str] = None,
+    trace_id: str | None = None,
+    span_id: str | None = None,
 ) -> dict[str, Any]:
     """Emit a telemetry event.
 
@@ -45,11 +45,11 @@ def emit_event(
 
 def emit_session_start(
     session_id: str,
-    goal: Optional[str] = None,
-    persona: Optional[str] = None,
-    protocol: Optional[str] = None,
-    human: Optional[str] = None,
-    inherited_count: Optional[int] = None,
+    goal: str | None = None,
+    persona: str | None = None,
+    protocol: str | None = None,
+    human: str | None = None,
+    inherited_count: int | None = None,
 ) -> dict[str, Any]:
     """Emit session.start event."""
     attributes = {
@@ -72,10 +72,10 @@ def emit_session_start(
 def emit_session_end(
     session_id: str,
     duration_seconds: int,
-    token_count: Optional[int] = None,
-    goal_achieved: Optional[bool] = None,
-    insights_produced: Optional[int] = None,
-    frictions_logged: Optional[int] = None,
+    token_count: int | None = None,
+    goal_achieved: bool | None = None,
+    insights_produced: int | None = None,
+    frictions_logged: int | None = None,
 ) -> dict[str, Any]:
     """Emit session.end event."""
     attributes = {
@@ -98,8 +98,8 @@ def emit_tool_call(
     session_id: str,
     tool_name: str,
     success: bool,
-    duration_ms: Optional[int] = None,
-    error_type: Optional[str] = None,
+    duration_ms: int | None = None,
+    error_type: str | None = None,
 ) -> dict[str, Any]:
     """Emit session.tool_call event."""
     attributes = {

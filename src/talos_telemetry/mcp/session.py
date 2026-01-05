@@ -1,10 +1,10 @@
 """Session lifecycle MCP tools."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from talos_telemetry.db.connection import execute_query, get_connection
-from talos_telemetry.telemetry.events import emit_session_start, emit_session_end
+from talos_telemetry.db.connection import get_connection
+from talos_telemetry.telemetry.events import emit_session_end, emit_session_start
 
 
 def session_open(
@@ -100,8 +100,8 @@ def session_open(
 
 def session_close(
     session_id: str,
-    goal_achieved: Optional[bool] = None,
-    summary: Optional[str] = None,
+    goal_achieved: bool | None = None,
+    summary: str | None = None,
     skip_reflection: bool = False,
 ) -> dict[str, Any]:
     """Finalize a telemetry session.

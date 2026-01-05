@@ -1,7 +1,5 @@
 """Tests for reference data seeding."""
 
-import pytest
-
 
 class TestReferenceDateSeeding:
     """Tests verifying reference data is seeded correctly."""

@@ -2,7 +2,6 @@
 
 from talos_telemetry.db.connection import get_connection
 
-
 # Reference data definitions
 OPERATIONAL_STATES = [
     # Cognitive states

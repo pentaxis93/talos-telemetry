@@ -42,7 +42,7 @@ def setup_test_environment():
 @pytest.fixture
 def fresh_db():
     """Provide a fresh database for each test that needs it."""
-    from talos_telemetry.db.connection import close_connection, init_database, get_connection
+    from talos_telemetry.db.connection import close_connection, get_connection, init_database
     from talos_telemetry.db.kuzu_schema import deploy_schema
     from talos_telemetry.db.seed import seed_reference_data
 

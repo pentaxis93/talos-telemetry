@@ -2,7 +2,6 @@
 
 import os
 from pathlib import Path
-from typing import Optional, Union
 
 import numpy as np
 
@@ -25,7 +24,7 @@ def get_cache_path() -> Path:
     return DEFAULT_CACHE_PATH
 
 
-def get_model(model_name: Optional[str] = None):
+def get_model(model_name: str | None = None):
     """Get or initialize the embedding model.
 
     Args:
@@ -52,7 +51,7 @@ def get_model(model_name: Optional[str] = None):
     return _model
 
 
-def get_embedding(text: str, model_name: Optional[str] = None) -> list[float]:
+def get_embedding(text: str, model_name: str | None = None) -> list[float]:
     """Generate embedding for text.
 
     Args:
@@ -67,7 +66,7 @@ def get_embedding(text: str, model_name: Optional[str] = None) -> list[float]:
     return embedding.tolist()
 
 
-def get_embeddings(texts: list[str], model_name: Optional[str] = None) -> list[list[float]]:
+def get_embeddings(texts: list[str], model_name: str | None = None) -> list[list[float]]:
     """Generate embeddings for multiple texts.
 
     Args:
