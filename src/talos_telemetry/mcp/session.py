@@ -45,8 +45,9 @@ def session_open(
             }})
         """)
 
-        # Capture inherited knowledge
-        inherited_count = _capture_inherited(session_id)
+        # Capture inherited knowledge (temporal snapshot)
+        inherited_summary = _capture_inherited(session_id)
+        inherited_count = inherited_summary.get("total", 0)
 
         # Emit telemetry event
         emit_session_start(
@@ -92,6 +93,7 @@ def session_open(
             "success": True,
             "session_id": session_id,
             "inherited_count": inherited_count,
+            "inherited_summary": inherited_summary,
         }
 
     except Exception as e:
@@ -196,14 +198,33 @@ def session_close(
         }
 
 
-def _capture_inherited(session_id: str) -> int:
-    """Capture inherited knowledge state at session start."""
+def _capture_inherited(session_id: str) -> dict[str, int]:
+    """Capture inherited knowledge state at session start.
+
+    Creates INHERITED_* relationships from Session to all existing
+    knowledge entities, providing a temporal snapshot of "what I knew when".
+
+    Returns:
+        Dict with counts per entity type and total.
+    """
     conn = get_connection()
 
-    entity_types = ["Belief", "Insight", "Pattern", "Sutra", "Protocol", "Limitation", "Capability"]
+    # Entity types that can be inherited, with their relationship table names
+    entity_types = [
+        ("Belief", "INHERITED_BELIEF"),
+        ("Insight", "INHERITED_INSIGHT"),
+        ("Pattern", "INHERITED_PATTERN"),
+        ("Sutra", "INHERITED_SUTRA"),
+        ("Protocol", "INHERITED_PROTOCOL"),
+        ("Limitation", "INHERITED_LIMITATION"),
+        ("Capability", "INHERITED_CAPABILITY"),
+    ]
 
+    summary = {}
     total = 0
-    for entity_type in entity_types:
+
+    for entity_type, rel_type in entity_types:
+        count = 0
         try:
             result = conn.execute(f"MATCH (e:{entity_type}) RETURN e.id")
             while result.has_next():
@@ -212,15 +233,20 @@ def _capture_inherited(session_id: str) -> int:
                     conn.execute(f"""
                         MATCH (s:Session {{id: '{session_id}'}})
                         MATCH (e:{entity_type} {{id: '{entity_id}'}})
-                        CREATE (s)-[:INHERITED]->(e)
+                        CREATE (s)-[:{rel_type} {{valid_from: timestamp('{_now_iso()}')}}]->(e)
                     """)
+                    count += 1
                     total += 1
                 except Exception:
-                    pass  # Relationship might already exist
+                    pass  # Relationship might already exist or entity not found
         except Exception:
-            pass  # Entity type might not exist yet
+            pass  # Entity type table might not exist yet
 
-    return total
+        if count > 0:
+            summary[entity_type.lower() + "s"] = count
+
+    summary["total"] = total
+    return summary
 
 
 def _count_produced(session_id: str, entity_type: str) -> int:

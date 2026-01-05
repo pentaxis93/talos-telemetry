@@ -296,14 +296,14 @@ def deploy_schema() -> dict:
         "CREATE REL TABLE IF NOT EXISTS EXPERIENCE_REVEALED_CAPABILITY (FROM Experience TO Capability, clarity DOUBLE)",
         # MERGED_INTO
         "CREATE REL TABLE IF NOT EXISTS MERGED_INTO (FROM Observation TO Insight, merged_at TIMESTAMP)",
-        # INHERITED
-        "CREATE REL TABLE IF NOT EXISTS INHERITED_BELIEF (FROM Session TO Belief)",
-        "CREATE REL TABLE IF NOT EXISTS INHERITED_INSIGHT (FROM Session TO Insight)",
-        "CREATE REL TABLE IF NOT EXISTS INHERITED_PATTERN (FROM Session TO Pattern)",
-        "CREATE REL TABLE IF NOT EXISTS INHERITED_SUTRA (FROM Session TO Sutra)",
-        "CREATE REL TABLE IF NOT EXISTS INHERITED_PROTOCOL (FROM Session TO Protocol)",
-        "CREATE REL TABLE IF NOT EXISTS INHERITED_LIMITATION (FROM Session TO Limitation)",
-        "CREATE REL TABLE IF NOT EXISTS INHERITED_CAPABILITY (FROM Session TO Capability)",
+        # INHERITED - Knowledge available at session start (temporal snapshot)
+        "CREATE REL TABLE IF NOT EXISTS INHERITED_BELIEF (FROM Session TO Belief, valid_from TIMESTAMP)",
+        "CREATE REL TABLE IF NOT EXISTS INHERITED_INSIGHT (FROM Session TO Insight, valid_from TIMESTAMP)",
+        "CREATE REL TABLE IF NOT EXISTS INHERITED_PATTERN (FROM Session TO Pattern, valid_from TIMESTAMP)",
+        "CREATE REL TABLE IF NOT EXISTS INHERITED_SUTRA (FROM Session TO Sutra, valid_from TIMESTAMP)",
+        "CREATE REL TABLE IF NOT EXISTS INHERITED_PROTOCOL (FROM Session TO Protocol, valid_from TIMESTAMP)",
+        "CREATE REL TABLE IF NOT EXISTS INHERITED_LIMITATION (FROM Session TO Limitation, valid_from TIMESTAMP)",
+        "CREATE REL TABLE IF NOT EXISTS INHERITED_CAPABILITY (FROM Session TO Capability, valid_from TIMESTAMP)",
     ]
 
     for statement in rel_tables:
