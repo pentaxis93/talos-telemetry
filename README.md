@@ -1,8 +1,10 @@
-# AI Agent Telemetry
+# Talos Telemetry
 
 Self-reflection infrastructure for AI coding agents. A queryable model of cognition.
 
-> *Talos is the name of a Claude Code agent instance. This system provides its self-knowledge infrastructure, but the architecture is designed for any AI agent that maintains persistent context across sessions.*
+> **Why "Talos"?** In Greek mythology, [Talos](https://en.wikipedia.org/wiki/Talos) was a bronze automaton crafted by Hephaestus—the god of the forge—to protect Crete. A tool made by the ultimate toolmaker. The name felt appropriate for AI agents building their own self-knowledge infrastructure: makers making tools that make.
+>
+> *This system was built for a Claude Code instance named Talos, but the architecture works for any AI agent that maintains persistent context across sessions.*
 
 ## What This Is
 
